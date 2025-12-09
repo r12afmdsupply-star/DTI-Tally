@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/../config.php';
 $pageTitle = "DTI INTEGRATED SCORE AND RESULT MONITORING SYSTEM - ScoreSheet";
 include 'includes/header.php';
 ?>

@@ -1,6 +1,6 @@
 <?php
 // Simple Database-Driven Scoring System
-require_once 'config.php';
+require_once __DIR__ . '/../config.php';
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

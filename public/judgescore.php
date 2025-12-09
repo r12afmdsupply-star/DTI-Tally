@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/../config.php';
 
 // Check if judge is validated via session
 if (!isset($_SESSION['judge_validated']) || $_SESSION['judge_validated'] !== true || !isset($_SESSION['judge_name'])) {
