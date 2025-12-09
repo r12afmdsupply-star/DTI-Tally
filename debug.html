@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Debug</title>
+</head>
+<body>
+    <h1>Database Debug Test</h1>
+    
+    <button onclick="testDatabase()">Test Database Connection</button>
+    <button onclick="testAddTeam()">Test Add Team</button>
+    <button onclick="testAddGame()">Test Add Game</button>
+    <button onclick="loadData()">Load All Data</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        async function testDatabase() {
+            try {
+                const response = await fetch('database_handler.php?action=teams');
+                const result = await response.json();
+                document.getElementById('results').innerHTML = '<h3>Teams:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+        
+        async function testAddTeam() {
+            try {
+                const data = {
+                    name: 'Test Team ' + Date.now(),
+                    code: 'TEST',
+                    color: '#ff0000',
+                    members: 'Test Member'
+                };
+                
+                const response = await fetch('database_handler.php?action=teams', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                document.getElementById('results').innerHTML = '<h3>Add Team Result:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+        
+        async function testAddGame() {
+            try {
+                const data = {
+                    name: 'Test Game ' + Date.now(),
+                    description: 'Test Description',
+                    points_system: {'1st': 10, '2nd': 8, '3rd': 6}
+                };
+                
+                const response = await fetch('database_handler.php?action=games', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                document.getElementById('results').innerHTML = '<h3>Add Game Result:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+        
+        async function loadData() {
+            try {
+                const [teamsRes, gamesRes] = await Promise.all([
+                    fetch('database_handler.php?action=teams'),
+                    fetch('database_handler.php?action=games')
+                ]);
+                
+                const teams = await teamsRes.json();
+                const games = await gamesRes.json();
+                
+                document.getElementById('results').innerHTML = 
+                    '<h3>Teams:</h3><pre>' + JSON.stringify(teams, null, 2) + '</pre>' +
+                    '<h3>Games:</h3><pre>' + JSON.stringify(games, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTI INTEGRATED SCORE AND RESULT MONITORING SYSTEM - ScoreSheet</title>
+    <link rel="stylesheet" href="scoresheet.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-flex">
+                <img src="DTI logo.png" alt="DTI Logo" class="header-logo">
+                <div>
+                    <h1><i class="fas fa-trophy"></i> DTI INTEGRATED SCORE AND RESULT MONITORING SYSTEM</h1>
+                    <p>ScoreSheet &amp; Leaderboards</p> 
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="scoresheet">
+                <i class="fas fa-table"></i> ScoreSheet
+            </button>
+            <button class="tab-btn" data-tab="games">
+                <i class="fas fa-gamepad"></i> Games
+            </button>
+            <button class="tab-btn" data-tab="teams">
+                <i class="fas fa-users"></i> Teams
+            </button>
+            <button class="tab-btn" data-tab="leaderboards">
+                <i class="fas fa-trophy"></i> Leaderboards
+            </button>
+            <button class="tab-btn" data-tab="overall-rankings">
+                <i class="fas fa-medal"></i> Overall Rankings
+            </button>
+            <button class="tab-btn" data-tab="judge">
+                <i class="fas fa-gavel"></i> Judge
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <i class="fas fa-history"></i> History
+            </button>
+        </nav>
+
+        <!-- ScoreSheet Tab -->
+        <div class="tab-content active" id="scoresheet">
+            <div class="scoresheet-container">
+                <!-- Game Selection -->
+                <div class="game-selection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><i class="fas fa-gamepad"></i> Select Game</h2>
+                        <button type="button" class="btn btn-secondary" id="refreshDataBtn">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                    </div>
+                    <div class="game-grid" id="gameGrid">
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-spinner fa-spin"></i> Loading games...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Score Entry Form -->
+                <div class="score-entry" id="scoreEntry" style="display: none;">
+                    <h2><i class="fas fa-plus-circle"></i> Add Score</h2>
+                    <form id="addScoreForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="selectedGame">Game:</label>
+                                <input type="text" id="selectedGame" readonly>
+                                <input type="hidden" id="selectedGameId">
+                            </div>
+                            <div class="form-group">
+                                <label for="teamSelect">Team:</label>
+                                <select id="teamSelect" required>
+                                    <option value="">Select Team</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="placement">Placement:</label>
+                                <select id="placement" required>
+                                    <option value="">Select Placement</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="points">Points:</label>
+                                <input type="number" id="points" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="scorerName">Scorer:</label>
+                            <input type="text" id="scorerName" placeholder="Who recorded this score?" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add Score
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelScoreBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Debug Info -->
+                <div class="debug-info" style="background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <h3><i class="fas fa-bug"></i> Debug Info</h3>
+                    <p><strong>Teams loaded:</strong> <span id="teamsCount">0</span></p>
+                    <p><strong>Games loaded:</strong> <span id="gamesCount">0</span></p>
+                    <p><strong>Scores loaded:</strong> <span id="scoresCount">0</span></p>
+                    <button type="button" class="btn btn-info" id="debugInfoBtn">
+                        <i class="fas fa-info-circle"></i> Show Debug Info
+                    </button>
+                </div>
+
+                <!-- Current Scores Table -->
+                <div class="scores-table">
+                    <h2><i class="fas fa-table"></i> Current Scores</h2>
+                    <div class="table-container">
+                        <table class="excel-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Team</th>
+                                    <th>Total Points</th>
+                                    <th>Games Played</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoresTable">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading scores...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games Tab -->
+        <div class="tab-content" id="games">
+            <div class="games-container">
+                <!-- Add Game Form -->
+                <div class="add-game-form">
+                    <h2><i class="fas fa-plus-circle"></i> Add New Game</h2>
+                    <form id="addGameForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gameName">Game Name:</label>
+                                <input type="text" id="gameName" placeholder="Enter game name" required>
+                                <div id="gameNameError" style="color: #e74c3c; font-size: 0.85rem; margin-top: 5px; display: none;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="gameCategory">Category:</label>
+                                <select id="gameCategory" required>
+                                    <option value="scorer">Scorer</option>
+                                    <option value="judge">Judge</option>
+                                </select>
+                                <small style="color: var(--text-muted); margin-top: 5px; display: block;">
+                                    <strong>Scorer:</strong> Uses points system based on placement<br>
+                                    <strong>Judge:</strong> Uses criteria-based scoring (0-20 each)
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Judge Event Type (only visible for judge category) -->
+                        <div class="form-group" id="judgeEventTypeContainer" style="display: none;">
+                            <label for="judgeEventType">Judge Event Type:</label>
+                            <select id="judgeEventType">
+                                <option value="">Select Event Type</option>
+                                <option value="Performance">Performance Evaluation</option>
+                                <option value="Creative">Creative Presentation</option>
+                                <option value="Sportsmanship">Sportsmanship</option>
+                                <option value="Teamwork">Teamwork Assessment</option>
+                                <option value="Strategy">Strategy & Planning</option>
+                                <option value="Presentation">Oral Presentation</option>
+                                <option value="Talent">Talent Show</option>
+                                <option value="Cultural">Cultural Event</option>
+                                <option value="Beauty">Beauty Pageant</option>
+                                <option value="Cheerleading">Cheerleading Competition</option>
+                                <option value="Dance">Dance Competition</option>
+                                <option value="Cooking">Cooking Contest</option>
+                                <option value="Art">Art & Design</option>
+                                <option value="Other">Other (Specify in description)</option>
+                            </select>
+                            <small style="color: var(--text-muted); margin-top: 5px; display: block;">
+                                Select the type of judge event to help categorize and identify the scoring criteria
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gameDescription">Description (optional):</label>
+                            <textarea id="gameDescription" placeholder="Brief description of the game"></textarea>
+                        </div>
+                        
+                        <!-- Points System (only visible for scorer category) -->
+                        <div class="points-system" id="pointsSystemContainer">
+                            <h3><i class="fas fa-star"></i> Points System</h3>
+                            <div class="points-grid" id="pointsGrid">
+                                <div class="point-entry">
+                                    <input type="text" placeholder="Placement (e.g., 1st)" class="placement-input" value="1st">
+                                    <input type="number" placeholder="Points" class="points-input" min="0" value="10">
+                                    <button type="button" class="btn btn-danger btn-sm remove-point-entry">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="point-entry">
+                                    <input type="text" placeholder="Placement (e.g., 2nd)" class="placement-input" value="2nd">
+                                    <input type="number" placeholder="Points" class="points-input" min="0" value="8">
+                                    <button type="button" class="btn btn-danger btn-sm remove-point-entry">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="point-entry">
+                                    <input type="text" placeholder="Placement (e.g., 3rd)" class="placement-input" value="3rd">
+                                    <input type="number" placeholder="Points" class="points-input" min="0" value="6">
+                                    <button type="button" class="btn btn-danger btn-sm remove-point-entry">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary" id="addPointEntryBtn">
+                                <i class="fas fa-plus"></i> Add Placement
+                            </button>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Game
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Games List -->
+                <div class="games-list">
+                    <h3><i class="fas fa-gamepad"></i> Registered Games</h3>
+                    <div class="games-grid" id="gamesGrid">
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-spinner fa-spin"></i> Loading games...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teams Tab -->
+        <div class="tab-content" id="teams">
+            <div class="teams-container">
+                <!-- Add Team Form -->
+                <div class="add-team-form">
+                    <h2><i class="fas fa-user-plus"></i> Add New Team</h2>
+                    <form id="addTeamForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="teamName">Team Name:</label>
+                                <input type="text" id="teamName" placeholder="Enter team name (e.g., RO HipHop, GSC Basketball)" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="teamCode">Team Code:</label>
+                                <select id="teamCode" required>
+                                    <option value="">Select Team Code</option>
+                                    <option value="RO">RO - Regional Office</option>
+                                    <option value="GSC">GSC - General Santos City</option>
+                                    <option value="SK">SK - Sultan Kudarat</option>
+                                    <option value="SC">SC - South Cotabato</option>
+                                    <option value="SAR">SAR - Sarangani</option>
+                                    <option value="SOC">SOC - Socsargen</option>
+                                    <option value="COT">COT - Cotabato</option>
+                                </select>
+                                <small style="color: var(--text-muted); margin-top: 5px; display: block;">Select team code category - this determines overall rankings</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="teamColor">Team Color:</label>
+                                <div class="color-swatches team-color-swatches" style="margin-bottom: 8px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#e74c3c" data-name="Red" style="background: #e74c3c;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#2563eb" data-name="Blue" style="background: #2563eb;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#facc15" data-name="Yellow" style="background: #facc15; color: #222;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#ffd700" data-name="Gold" style="background: #ffd700; color: #222;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#000000" data-name="Black" style="background: #000000; color: #fff;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#8b5cf6" data-name="Violet" style="background: #8b5cf6;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#fb923c" data-name="Orange" style="background: #fb923c;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#22c55e" data-name="Green" style="background: #22c55e;"></button>
+                                    <button type="button" class="color-swatch-simple team-color-swatch" data-color="#ffffff" data-name="White" style="background: #ffffff; color: #222; border: 1px solid #ccc;"></button>
+                                </div>
+                                <input type="hidden" id="teamColor" name="teamColor" value="#2563eb">
+                                <div id="selectedTeamColorName" style="margin-top: 8px; font-weight: bold; color: #333;">Selected: Blue</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="teamMembers">Team Members (optional):</label>
+                            <textarea id="teamMembers" placeholder="Enter team member names, separated by commas"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Team
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Teams List -->
+                <div class="teams-list">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3><i class="fas fa-users"></i> Registered Teams</h3>
+                        <div class="team-filter-controls" style="display: flex; gap: 10px; align-items: center;">
+                            <select id="teamCodeFilter" class="team-filter" aria-label="Filter teams by code">
+                                <option value="">All Team Codes</option>
+                                <option value="RO">RO - Regional Office</option>
+                                <option value="GSC">GSC - General Santos City</option>
+                                <option value="SK">SK - Sultan Kudarat</option>
+                                <option value="SC">SC - South Cotabato</option>
+                                <option value="SAR">SAR - Sarangani</option>
+                                <option value="SOC">SOC - Socsargen</option>
+                                <option value="COT">COT - Cotabato</option>
+                                <option value="MAG">MAG - Maguindanao</option>
+                                <option value="LAN">LAN - Lanao</option>
+                                <option value="SUK">SUK - Sulu</option>
+                                <option value="TWI">TWI - Tawi-Tawi</option>
+                                <option value="BAS">BAS - Basilan</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary" id="clearTeamFilterBtn">
+                                <i class="fas fa-times"></i> Clear Filter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="teams-grid" id="teamsGrid">
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-spinner fa-spin"></i> Loading teams...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboards Tab -->
+        <div class="tab-content" id="leaderboards">
+            <div class="leaderboards-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-trophy"></i> Final Leaderboard</h2>
+                    <div class="leaderboard-controls" style="display: flex; gap: 10px; align-items: center;">
+                        <select id="leaderboardGameFilter" class="leaderboard-filter" aria-label="Filter leaderboard by game">
+                            <option value="">All Games</option>
+                        </select>
+                        <button id="printLeaderboardBtn" class="btn btn-primary">
+                            <i class="fas fa-print"></i> Print Leaderboard
+                        </button>
+                    </div>
+                </div>
+                <div class="leaderboard-table-container" id="leaderboardPrintArea">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Team</th>
+                                <th>Total Points</th>
+                                <th>Games Played</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading leaderboard...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Rankings Tab -->
+        <div class="tab-content" id="overall-rankings">
+            <div class="overall-rankings-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-medal"></i> Overall Rankings</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="refreshOverallRankingsBtn" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt"></i> Refresh Rankings
+                        </button>
+                        <button id="printOverallRankingsBtn" class="btn btn-primary">
+                            <i class="fas fa-print"></i> Print Rankings
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Team Code</th>
+                                <th>Total Points</th>
+                                <th>Games Played</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overallRankingsTable">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading rankings...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Judge Tab -->
+        <div class="tab-content" id="judge">
+            <div class="judge-container">
+                <h2><i class="fas fa-gavel"></i> Judge Scoring System</h2>
+                
+                <!-- Judge Selection -->
+                <div class="judge-selection">
+                    <h3><i class="fas fa-user-tie"></i> Select Judge</h3>
+                    <div class="form-group">
+                        <label for="judgeName">Judge Name:</label>
+                        <input type="text" id="judgeName" placeholder="Enter judge name (e.g., John Smith)" required>
+                        <small style="color: var(--text-muted); margin-top: 5px; display: block;">Enter the name of the judge who will be scoring</small>
+                    </div>
+                    <div class="judge-actions">
+                        <button type="button" class="btn btn-primary" id="startJudgeBtn">
+                            <i class="fas fa-play"></i> Start Judge Scoring
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Judge Scores History -->
+                <div class="judge-history">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3><i class="fas fa-list"></i> Judge Scores History</h3>
+                        <div>
+                            <button type="button" class="btn btn-secondary" id="refreshJudgeHistoryBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button type="button" class="btn btn-info" id="debugJudgeBtn">
+                                <i class="fas fa-bug"></i> Debug
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="excel-table">
+                            <thead>
+                                <tr>
+                                    <th>Judge</th>
+                                    <th>Team</th>
+                                    <th>Team Code</th>
+                                    <th>Performance</th>
+                                    <th>Teamwork</th>
+                                    <th>Strategy</th>
+                                    <th>Sportsmanship</th>
+                                    <th>Overall</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="judgeHistoryTable">
+                                <tr>
+                                    <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block; opacity: 0.5;"></i>
+                                        No judge scores recorded yet
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div class="tab-content" id="history">
+            <div class="history-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-history"></i> Score History</h2>
+                    <button id="printHistoryBtn" class="btn btn-primary">
+                        <i class="fas fa-print"></i> Print History
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>Date/Time</th>
+                                <th>Game</th>
+                                <th>Team</th>
+                                <th>Placement</th>
+                                <th>Points</th>
+                                <th>Scorer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading history...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scoresheet.js"></script>
+    <script>
+        // SIMPLE and CLEAN initialization - NO button freezing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing ScoreSheet System...');
+            
+            // Initialize ScoreSheet if available
+            if (typeof ScoreSheet !== 'undefined') {
+                window.scoresheet = new ScoreSheet();
+                
+                // Override the startScoreEntry method to ensure points system works
+                if (window.scoresheet.startScoreEntry) {
+                    const originalStartScoreEntry = window.scoresheet.startScoreEntry;
+                    window.scoresheet.startScoreEntry = function(game) {
+                        originalStartScoreEntry.call(this, game);
+                        setupPlacementOptions(game);
+                    };
+                }
+                
+                // Override addGame method to prevent duplicates
+                if (window.scoresheet.addGame) {
+                    const originalAddGame = window.scoresheet.addGame;
+                    window.scoresheet.addGame = async function(gameData) {
+                        // Check for duplicate game name
+                        const existingGames = await this.fetchGames();
+                        const duplicateGame = existingGames.find(game => 
+                            game.name.toLowerCase() === gameData.name.toLowerCase()
+                        );
+                        
+                        if (duplicateGame) {
+                            document.getElementById('gameNameError').style.display = 'block';
+                            document.getElementById('gameNameError').textContent = `Error: A game named "${gameData.name}" already exists!`;
+                            return false;
+                        }
+                        
+                        // Clear any previous error
+                        document.getElementById('gameNameError').style.display = 'none';
+                        
+                        // Proceed with original addGame
+                        return originalAddGame.call(this, gameData);
+                    };
+                }
+                
+                // Override renderTeams to show simplified team cards
+                if (window.scoresheet.renderTeams) {
+                    const originalRenderTeams = window.scoresheet.renderTeams;
+                    window.scoresheet.renderTeams = function(teams) {
+                        // Call original method first
+                        originalRenderTeams.call(this, teams);
+                        
+                        // Then simplify the team cards
+                        simplifyTeamCards();
+                    };
+                }
+            }
+            
+            setupEventListeners();
+            loadJudgeName();
+            refreshJudgeHistory();
+            setupTeamColorSelection();
+        });
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    if (tabId === 'judge') {
+                        refreshJudgeHistory();
+                    } else if (tabId === 'teams') {
+                        // Simplify team cards when teams tab is opened
+                        setTimeout(simplifyTeamCards, 100);
+                    }
+                });
+            });
+
+            // Refresh buttons
+            document.getElementById('refreshDataBtn')?.addEventListener('click', function() {
+                if (window.scoresheet && window.scoresheet.loadAllData) {
+                    window.scoresheet.loadAllData().then(() => {
+                        simplifyTeamCards();
+                    });
+                }
+            });
+
+            document.getElementById('refreshJudgeHistoryBtn')?.addEventListener('click', refreshJudgeHistory);
+            document.getElementById('refreshOverallRankingsBtn')?.addEventListener('click', function() {
+                if (window.scoresheet && window.scoresheet.renderOverallRankings) {
+                    window.scoresheet.renderOverallRankings();
+                }
+            });
+
+            // Cancel score button
+            document.getElementById('cancelScoreBtn')?.addEventListener('click', function() {
+                if (window.scoresheet && window.scoresheet.cancelScoreEntry) {
+                    window.scoresheet.cancelScoreEntry();
+                }
+            });
+
+            // Clear filter button
+            document.getElementById('clearTeamFilterBtn')?.addEventListener('click', function() {
+                if (window.scoresheet && window.scoresheet.clearTeamFilter) {
+                    window.scoresheet.clearTeamFilter();
+                }
+            });
+
+            // Debug buttons
+            document.getElementById('debugInfoBtn')?.addEventListener('click', function() {
+                if (window.scoresheet && window.scoresheet.showDebugInfo) {
+                    window.scoresheet.showDebugInfo();
+                }
+            });
+
+            document.getElementById('debugJudgeBtn')?.addEventListener('click', function() {
+                console.log('Judge Scores in localStorage:', JSON.parse(localStorage.getItem('scoresheet-judge-scores') || '[]'));
+                alert('Check console for judge scores data');
+            });
+
+            // Judge scoring
+            document.getElementById('startJudgeBtn')?.addEventListener('click', startJudgeScoring);
+
+            // Print buttons
+            document.getElementById('printLeaderboardBtn')?.addEventListener('click', printLeaderboard);
+            document.getElementById('printHistoryBtn')?.addEventListener('click', printHistory);
+            document.getElementById('printOverallRankingsBtn')?.addEventListener('click', printOverallRankings);
+
+            // Point entry management
+            document.getElementById('addPointEntryBtn')?.addEventListener('click', addPointEntry);
+            
+            // Remove point entry events
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-point-entry')) {
+                    removePointEntry(e.target);
+                }
+            });
+
+            // Placement change event - FIXED: This will update points when placement is selected
+            document.addEventListener('change', function(e) {
+                if (e.target.id === 'placement') {
+                    updatePointsBasedOnPlacement();
+                }
+            });
+            
+            // Game name input - clear error when typing
+            document.getElementById('gameName')?.addEventListener('input', function() {
+                document.getElementById('gameNameError').style.display = 'none';
+            });
+
+            // Game category change - show/hide points system and judge event type
+            document.getElementById('gameCategory')?.addEventListener('change', function() {
+                togglePointsSystem(this.value);
+                toggleJudgeEventType(this.value);
+            });
+
+            // Initialize visibility
+            const initialCategory = document.getElementById('gameCategory')?.value || 'scorer';
+            togglePointsSystem(initialCategory);
+            toggleJudgeEventType(initialCategory);
+        }
+
+        // Function to toggle points system visibility based on category
+        function togglePointsSystem(category) {
+            const pointsSystemContainer = document.getElementById('pointsSystemContainer');
+            if (pointsSystemContainer) {
+                if (category === 'scorer') {
+                    pointsSystemContainer.style.display = 'block';
+                } else {
+                    pointsSystemContainer.style.display = 'none';
+                }
+            }
+        }
+
+        // Function to toggle judge event type visibility based on category
+        function toggleJudgeEventType(category) {
+            const judgeEventTypeContainer = document.getElementById('judgeEventTypeContainer');
+            if (judgeEventTypeContainer) {
+                if (category === 'judge') {
+                    judgeEventTypeContainer.style.display = 'block';
+                } else {
+                    judgeEventTypeContainer.style.display = 'none';
+                    // Clear the value when hidden
+                    document.getElementById('judgeEventType').value = '';
+                }
+            }
+        }
+
+        // NEW: Function to simplify team cards - remove stats, show only name, code, and buttons
+        function simplifyTeamCards() {
+            const teamsGrid = document.getElementById('teamsGrid');
+            const teamCards = teamsGrid.querySelectorAll('.team-card');
+            
+            teamCards.forEach(card => {
+                // Remove any existing stats sections
+                const statsSections = card.querySelectorAll('.team-stats, .team-scores-details, .team-stat, .team-stat-value');
+                statsSections.forEach(section => section.remove());
+                
+                // Find or create actions container
+                let actionsContainer = card.querySelector('.team-actions');
+                if (!actionsContainer) {
+                    actionsContainer = document.createElement('div');
+                    actionsContainer.className = 'team-actions';
+                    actionsContainer.style.marginTop = '15px';
+                    actionsContainer.style.display = 'flex';
+                    actionsContainer.style.gap = '8px';
+                    actionsContainer.style.justifyContent = 'center';
+                    card.appendChild(actionsContainer);
+                }
+                
+                // Clear existing actions
+                actionsContainer.innerHTML = '';
+                
+                // Add View Details button
+                const viewDetailsBtn = document.createElement('button');
+                viewDetailsBtn.type = 'button';
+                viewDetailsBtn.className = 'btn btn-primary btn-sm';
+                viewDetailsBtn.innerHTML = '<i class="fas fa-eye"></i> View Details';
+                viewDetailsBtn.onclick = function() {
+                    const teamId = card.getAttribute('data-team-id');
+                    const teamName = card.querySelector('.team-name')?.textContent;
+                    if (teamId && teamName) {
+                        showTeamDetails(teamId, teamName);
+                    }
+                };
+                
+                // Add Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'btn btn-danger btn-sm';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                deleteBtn.onclick = function() {
+                    const teamId = card.getAttribute('data-team-id');
+                    const teamName = card.querySelector('.team-name')?.textContent;
+                    if (teamId && teamName) {
+                        deleteTeam(teamId, teamName);
+                    }
+                };
+                
+                actionsContainer.appendChild(viewDetailsBtn);
+                actionsContainer.appendChild(deleteBtn);
+            });
+        }
+
+        // NEW: Function to show team details
+        function showTeamDetails(teamId, teamName) {
+            // You can implement a modal or redirect to team details page
+            alert(`Viewing details for: ${teamName}\nTeam ID: ${teamId}\n\nThis would show detailed team statistics, scores, and performance history.`);
+            
+            // Alternative: Redirect to team details page
+            // window.location.href = `team_details.php?team_id=${teamId}`;
+        }
+
+        // NEW: Function to delete team - Fixed to use ScoreSheet class method
+        function deleteTeam(teamId, teamName) {
+            if (window.scoresheet && window.scoresheet.deleteTeam) {
+                // Use the ScoreSheet class method which handles API correctly
+                window.scoresheet.deleteTeam(teamId);
+            } else {
+                // Fallback if ScoreSheet not available
+                if (confirm(`Are you sure you want to delete team "${teamName}"?\n\nThis action cannot be undone!`)) {
+                    fetch('database_handler.php?action=teams', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: teamId })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            alert(`Team "${teamName}" has been deleted successfully!`);
+                            // Refresh teams list
+                            if (window.scoresheet && window.scoresheet.loadAllData) {
+                                window.scoresheet.loadAllData();
+                            }
+                        } else {
+                            alert(`Error deleting team: ${result.message || 'Unknown error'}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting team:', error);
+                        alert('Error deleting team. Please check console for details.');
+                    });
+                }
+            }
+        }
+
+        // FIXED: Function to setup placement options based on game's points system
+        function setupPlacementOptions(game) {
+            const placementSelect = document.getElementById('placement');
+            const pointsInput = document.getElementById('points');
+            
+            // Clear existing options
+            placementSelect.innerHTML = '<option value="">Select Placement</option>';
+            pointsInput.value = '';
+            
+            if (!game || !game.points_system) {
+                console.error('No points system found for game:', game);
+                return;
+            }
+            
+            // Parse points system
+            let pointsSystem;
+            try {
+                pointsSystem = typeof game.points_system === 'string' 
+                    ? JSON.parse(game.points_system) 
+                    : game.points_system;
+            } catch (error) {
+                console.error('Error parsing points system:', error);
+                return;
+            }
+            
+            // Add placement options based on points system
+            Object.keys(pointsSystem).forEach(placement => {
+                const option = document.createElement('option');
+                option.value = placement;
+                option.textContent = placement;
+                placementSelect.appendChild(option);
+            });
+            
+            console.log('Placement options setup for game:', game.name, 'Points system:', pointsSystem);
+        }
+
+        // FIXED: Function to update points based on selected placement
+        function updatePointsBasedOnPlacement() {
+            const placementSelect = document.getElementById('placement');
+            const pointsInput = document.getElementById('points');
+            const selectedGameId = document.getElementById('selectedGameId').value;
+            
+            if (!placementSelect.value || !selectedGameId) {
+                pointsInput.value = '';
+                return;
+            }
+
+            // Get the selected game's points system
+            if (window.scoresheet && window.scoresheet.games) {
+                const game = window.scoresheet.games.find(g => g.id == selectedGameId);
+                if (game && game.points_system) {
+                    let pointsSystem;
+                    try {
+                        pointsSystem = typeof game.points_system === 'string' 
+                            ? JSON.parse(game.points_system) 
+                            : game.points_system;
+                    } catch (error) {
+                        console.error('Error parsing points system:', error);
+                        pointsInput.value = '';
+                        return;
+                    }
+                    
+                    const selectedPlacement = placementSelect.value;
+                    const points = pointsSystem[selectedPlacement];
+                    
+                    if (points !== undefined) {
+                        pointsInput.value = points;
+                        console.log(`Points set to ${points} for placement ${selectedPlacement}`);
+                    } else {
+                        pointsInput.value = '';
+                        console.warn(`No points defined for placement: ${selectedPlacement}`);
+                    }
+                }
+            }
+        }
+
+        // Point entry management
+        function addPointEntry() {
+            const pointsGrid = document.getElementById('pointsGrid');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'point-entry';
+            newEntry.innerHTML = `
+                <input type="text" placeholder="Placement (e.g., 1st)" class="placement-input">
+                <input type="number" placeholder="Points" class="points-input" min="0">
+                <button type="button" class="btn btn-danger btn-sm remove-point-entry">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            pointsGrid.appendChild(newEntry);
+        }
+
+        function removePointEntry(button) {
+            const pointEntry = button.closest('.point-entry');
+            if (document.querySelectorAll('.point-entry').length > 1) {
+                pointEntry.remove();
+            }
+        }
+
+        // Print functions
+        function printLeaderboard() {
+            window.print();
+        }
+
+        function printHistory() {
+            window.print();
+        }
+
+        function printOverallRankings() {
+            window.print();
+        }
+
+        // Judge functions
+        function startJudgeScoring() {
+            const judgeName = document.getElementById('judgeName').value.trim();
+            if (!judgeName) {
+                alert('Please enter judge name before starting');
+                return;
+            }
+            
+            localStorage.setItem('current-judge-name', judgeName);
+            window.location.href = 'judgescore.php';
+        }
+
+        // Load judge scores from database - FIXED: This now works with database data
+        async function refreshJudgeHistory() {
+            try {
+                const response = await fetch('database_handler.php?action=judge_scores');
+                const result = await response.json();
+                
+                const table = document.getElementById('judgeHistoryTable');
+                
+                if (!result.success || !result.data || result.data.length === 0) {
+                    table.innerHTML = `
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="fas fa-inbox"></i> No judge scores recorded yet
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const judgeScores = result.data;
+                let teams = [];
+                
+                if (window.scoresheet && window.scoresheet.teams) {
+                    teams = window.scoresheet.teams;
+                }
+                
+                const sorted = [...judgeScores].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                table.innerHTML = sorted.map(score => {
+                    const team = teams.find(t => t.id === score.team_id);
+                    const teamColor = team ? team.color : '#2563eb';
+                    
+                    // Color coding for total score
+                    let scoreColor = '#ef4444'; // red for poor
+                    if (score.total_score >= 90) scoreColor = '#22c55e'; // green for excellent
+                    else if (score.total_score >= 70) scoreColor = '#fbbf24'; // yellow for good
+                    else if (score.total_score >= 50) scoreColor = '#f97316'; // orange for fair
+
+                    return `
+                        <tr>
+                            <td><strong>${score.judge_name}</strong></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${teamColor};"></div>
+                                    <div>${team ? team.name : 'Unknown Team'}</div>
+                                </div>
+                            </td>
+                            <td><strong>${team ? team.code : 'N/A'}</strong></td>
+                            <td><strong>${score.criteria1}</strong></td>
+                            <td><strong>${score.criteria2}</strong></td>
+                            <td><strong>${score.criteria3}</strong></td>
+                            <td><strong>${score.criteria4}</strong></td>
+                            <td><strong>${score.criteria5}</strong></td>
+                            <td><strong style="color: ${scoreColor}; font-size: 1.1em;">${score.total_score}</strong></td>
+                            <td>${new Date(score.timestamp).toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading judge scores:', error);
+                const table = document.getElementById('judgeHistoryTable');
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px; color: var(--error-red);">
+                            <i class="fas fa-exclamation-triangle"></i> Error loading judge scores
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Team color selection
+        function setupTeamColorSelection() {
+            const teamColorButtons = document.querySelectorAll('.team-color-swatch');
+            teamColorButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectTeamColorSwatch(this);
+                });
+            });
+            
+            // Set default
+            if (teamColorButtons.length > 1) {
+                selectTeamColorSwatch(teamColorButtons[1]);
+            }
+        }
+
+        function selectTeamColorSwatch(btn) {
+            document.querySelectorAll('.team-color-swatch').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('teamColor').value = btn.getAttribute('data-color');
+            document.getElementById('selectedTeamColorName').textContent = 'Selected: ' + btn.getAttribute('data-name');
+        }
+
+        function loadJudgeName() {
+            const savedJudgeName = localStorage.getItem('current-judge-name');
+            if (savedJudgeName) {
+                document.getElementById('judgeName').value = savedJudgeName;
+            }
+        }
+
+        // Auto-refresh when returning from judgescore.php
+        window.addEventListener('focus', refreshJudgeHistory);
+    </script>
+</body>
+</html>
